@@ -1,6 +1,6 @@
 import './App.css';
-import Dashboard from './components/Dashboard';
 import { Container } from 'react-bootstrap';
+import Dashboard from './components/Dashboard';
 
 function App() {
   return (
