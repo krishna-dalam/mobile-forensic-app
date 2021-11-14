@@ -5,6 +5,7 @@ import { Table, InputGroup, FormControl, Button } from "react-bootstrap";
 import { ExcelRenderer } from "react-excel-renderer";
 import AppPagination from "../commons/app-pagination";
 import paginate from "../utils/paginate"
+import _ from 'lodash';
 
 class Dashboard extends Component {
   constructor(props) {
@@ -14,7 +15,8 @@ class Dashboard extends Component {
       cols: [],
       updatedRows: [],
       currentPage: 1,
-      searchValue: ""
+      searchValue: "",
+      sortColumn: { path: "title", order: 'asc'}
     };
   }
 //  WORKING CODE ---------------------
@@ -38,7 +40,7 @@ class Dashboard extends Component {
 
   printRow = (row, index) => {
     return (
-      <tr key={index}>
+      <tr key={index}>*
         <td>{moment(getJsDateFromExcel(row[0])).format('DD-MM-YYYY')}</td>
         <td>{row[1]}</td>
         <td>{row[2]}</td>
@@ -81,6 +83,7 @@ class Dashboard extends Component {
 
   handleSort = (path) => {
     console.log(path);
+    this.setState( {sortColumn: { path, order: 'asc'} });
   }
 
   handleSearch = () => {
@@ -96,7 +99,13 @@ class Dashboard extends Component {
 
   render() {
 
-    const paginatedMovies = paginate(this.state.updatedRows, this.state.currentPage, 30);
+    const {sortColumn, updatedRows, currentPage, rows} = this.state;
+
+    const sorted = _.orderBy(updatedRows, [sortColumn.path], [sortColumn.order]);
+
+    // Date filtering
+
+    const paginatedMovies = paginate(sorted, currentPage, 30);
     return (
         <>
             <div>
@@ -109,7 +118,7 @@ class Dashboard extends Component {
                 />
               </div>
 
-              {this.state.rows[0] && <InputGroup className="mb-3">
+              {rows[0] && <InputGroup className="mb-3">
                 <FormControl
                   placeholder="Search"
                   aria-label="Search"
@@ -123,7 +132,7 @@ class Dashboard extends Component {
 
             <Table striped bordered hover>
               <thead>
-                {this.state.rows[0] && <tr>
+                {rows[0] && <tr>
                   <th onClick={() => this.handleSort("date")}>Date</th>
                   <th onClick={() => this.handleSort("timestamp")}>Timestamp</th>
                   <th onClick={() => this.handleSort("process-id")}>Process ID</th>
@@ -136,9 +145,9 @@ class Dashboard extends Component {
               </tbody>
             </Table>
             <AppPagination 
-                itemsCount={this.state.rows.length} 
+                itemsCount={rows.length} 
                 pageSize={30} 
-                currentPage={this.state.currentPage} 
+                currentPage={currentPage} 
                 onPageChange={this.handlePageChange}
                 onFirstPageClicked={this.handleFirstPageClicked}
                 onLastPageClicked={this.handleLastPageClicked}
